@@ -42,7 +42,6 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
 
-        // Function to load Adsgram SDK dynamically
         function loadAdsgramScript() {
             return new Promise((resolve, reject) => {
                 if (typeof window.Adsgram !== 'undefined') {
@@ -68,13 +67,9 @@
                 const adController = Adsgram.init({ blockId: "49486" });
                 const result = await adController.show();
                 
-                // If ad is completed successfully:
                 alert("Ad completed successfully! You earned your reward.");
 
-                // Get user info from Telegram
                 const user = tg.initDataUnsafe?.user || { id: 'unknown', username: 'guest' };
-
-                // Send data to your Google Apps Script endpoint
                 const scriptUrl = "https://script.google.com/macros/s/AKfycbyP-KgnVdBuE6FpjQvn42CJrCGQ0OEyI2-ct3nfkC0QDpl1CfFzUEus31hWM7FHgDBm2A/exec";
                 
                 fetch(scriptUrl, {
@@ -89,8 +84,8 @@
                 }).catch(err => console.log("Sheet sync note:", err));
 
             } catch (err) {
-                console.error(err);
-                alert("The ad was closed or an error occurred.");
+                console.error("Adsgram Error Details:", err);
+                alert("Ad error: " + (err.message || JSON.stringify(err)));
             }
         });
     </script>
