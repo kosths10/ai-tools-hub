@@ -1,50 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="el">
 <head>
-  <meta charset="utf-8">
-  <title>AI Tools Hub</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://sad.adsgram.ai/js/sad.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #ffffff; color: #000000; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .container { text-align: center; }
-    button { background: #28bdf8; color: #8f172a; border: none; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tools Hub</title>
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Adsgram SDK -->
+    <script src="https://sad.adsgram.ai/js/sad.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        button {
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:active {
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2>AI Tools Hub 2026</h2>
-    <p>Click the button below to watch the ad:</p>
-    <button onclick="showAd()">Watch Ad</button>
-    <div id="ad-container"></div>
-  </div>
 
-  <script>
-    window.Telegram.WebApp.ready();
+    <h2>AI Tools Hub</h2>
+    <p>Πατήστε παρακάτω για να παρακολουθήσετε τη διαφήμιση:</p>
+    <button id="watch-ad-btn">Watch Ad</button>
 
-    function showAd() {
-      try {
-        if (typeof window.Adsgram === 'undefined') {
-          alert("Adsgram SDK is still loading. Please wait.");
-          return;
+    <script>
+        // Αρχικοποίηση Telegram WebApp
+        window.Telegram.WebApp.ready();
+
+        // Δημιουργία του Adsgram controller με το blockId σου
+        let adController = null;
+        if (typeof window.Adsgram !== 'undefined') {
+            adController = window.Adsgram.init({ blockId: "49486" });
         }
 
-        const ad = window.Adsgram.init({
-          blockId: "49486",
-          mode: "inline",
-          container: document.getElementById("ad-container")
-        });
+        document.getElementById('watch-ad-btn').addEventListener('click', async () => {
+            if (!adController) {
+                if (typeof window.Adsgram !== 'undefined') {
+                    adController = window.Adsgram.init({ blockId: "49486" });
+                } else {
+                    alert("Το Adsgram SDK δεν έχει φορτωθεί ακόμα. Ελέγξτε τη σύνδεσή σας.");
+                    return;
+                }
+            }
 
-        ad.show().then((result) => {
-          alert("Reward earned successfully!");
-        }).catch((err) => {
-          alert("Ad error: " + JSON.stringify(err));
+            try {
+                const result = await adController.show();
+                alert("Η διαφήμιση ολοκληρώθηκε με επιτυχία! Κερδίσατε την ανταμοιβή.");
+            } catch (err) {
+                console.error(err);
+                alert("Η διαφήμιση έκλεισε ή υπήρξε κάποιο σφάλμα.");
+            }
         });
-
-      } catch (e) {
-        alert("Exception: " + e.message);
-      }
-    }
-  </script>
+    </script>
 </body>
 </html>
