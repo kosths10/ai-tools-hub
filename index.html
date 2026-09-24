@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tools Hub</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://sad.adsgram.ai/js/sad.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,18 +39,55 @@
     <button id="watch-ad-btn">Watch Ad</button>
 
     <script>
-        window.Telegram.WebApp.ready();
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        // Function to load Adsgram SDK dynamically
+        function loadAdsgramScript() {
+            return new Promise((resolve, reject) => {
+                if (typeof window.Adsgram !== 'undefined') {
+                    resolve(window.Adsgram);
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = 'https://sad.adsgram.ai/js/sad.js';
+                script.onload = () => resolve(window.Adsgram);
+                script.onerror = () => reject(new Error('Failed to load Adsgram SDK'));
+                document.head.appendChild(script);
+            });
+        }
 
         document.getElementById('watch-ad-btn').addEventListener('click', async () => {
-            if (typeof window.Adsgram === 'undefined') {
-                alert("Adsgram SDK is still loading. Please wait a second and try again.");
-                return;
-            }
-
             try {
-                const adController = window.Adsgram.init({ blockId: "49486" });
+                const Adsgram = await loadAdsgramScript();
+                if (!Adsgram) {
+                    alert("Adsgram SDK failed to initialize.");
+                    return;
+                }
+                
+                const adController = Adsgram.init({ blockId: "49486" });
                 const result = await adController.show();
+                
+                // If ad is completed successfully:
                 alert("Ad completed successfully! You earned your reward.");
+
+                // Get user info from Telegram
+                const user = tg.initDataUnsafe?.user || { id: 'unknown', username: 'guest' };
+
+                // Send data to your Google Apps Script endpoint
+                const scriptUrl = "https://script.google.com/macros/s/AKfycbyP-KgnVdBuE6FpjQvn42CJrCGQ0OEyI2-ct3nfkC0QDpl1CfFzUEus31hWM7FHgDBm2A/exec";
+                
+                fetch(scriptUrl, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        username: user.username,
+                        action: "watched_ad"
+                    })
+                }).catch(err => console.log("Sheet sync note:", err));
+
             } catch (err) {
                 console.error(err);
                 alert("The ad was closed or an error occurred.");
